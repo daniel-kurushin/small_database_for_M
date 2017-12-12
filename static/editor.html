@@ -3,6 +3,53 @@
 <head>
 	<title>Маленькая БД</title>
 	<meta charset="utf-8">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	<script type="text/javascript">
+
+	get_data = function(obj_name)
+	{
+		var res = new Object();
+		$(obj_name + " > input").each(
+			function()
+			{
+				var _str = $(this)[0].attributes['name_'].value;
+				res[_str] = this.value;
+			}
+		)
+		return JSON.stringify(res);
+	}
+
+	fill_table = function()
+	{
+		//
+	}
+
+	$(document).ready(
+		function()
+		{
+			$("header > button").click(
+				function()
+				{
+					$.post(
+						"/setfilter",
+						{data:get_data('header')},
+						fill_table,
+					)
+				}
+			)
+			$("footer > button").click(
+				function()
+				{
+					$.post(
+						"/addrecord",
+						{data:get_data('footer')},
+						fill_table,
+					)
+				}
+			)
+		}
+	)
+	</script>
 	<style>
 		header {
 			/*background-color: antiquewhite;*/

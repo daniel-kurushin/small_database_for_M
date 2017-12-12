@@ -24,7 +24,8 @@ class EditorForm():
 		for key in self._get_data_keys():
 			input_el = self.soup.new_tag("input", name_=key, placeholder=key)
 			self.soup.find(_element).append(input_el)
-		input_el = self.soup.new_tag("input", type="button", value=_button)
+		input_el = self.soup.new_tag("button")
+		input_el.append(_button)
 		self.soup.find(_element).append(input_el)
 
 	def _make_table(self, **kwargs):

@@ -43,30 +43,9 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 	def _get_params(self):
 		rez = {}
 		try:
-			rez.update({'is_auth':0})
 			rez.update(urllib.parse.parse_qs(self.path.split("?")[1]))
 		except IndexError:
 			pass
-
-		if not rez['is_auth']:
-			try:
-				is_auth, _user = check_auth_cookies(self._get_cookies())
-				rez.update({
-					"is_auth": is_auth,
-					"login": _user
-				})
-			except WrongUsernameError:
-				rez.update({"is_auth": 0})
-		else:
-			pass
-			# TODO: убрать при релизе!
-
-		try:
-			prev_path = self._get_referer()
-			rez.update({'referer':prev_path})
-		except KeyError:
-			pass
-
 		print(rez)
 		return rez
 
@@ -147,7 +126,7 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 		)
 
 	def do_GET(self):
-		# params = self._get_params()
+		params = self._get_params()
 
 		if self.path.endswith('png'):
 			self._load_file(self.path.lstrip('/'), content_type='image/png')
@@ -182,7 +161,7 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 				int(self.headers.get('content-length'))
 			).decode('utf-8')
 		)
-		# print(self.path, data, file = sys.stderr)
+		print(self.path, data, file = sys.stderr)
 		if self.path.startswith('/auth'):
 			try:
 				_user = data['login'][0]

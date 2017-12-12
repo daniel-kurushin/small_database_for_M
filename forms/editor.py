@@ -20,30 +20,31 @@ class EditorForm():
 		except (KeyError, IndexError) as e:
 			return []
 
-	def _make_hfooter(self, _element = 'header'):
+	def _make_hfooter(self, _element = 'header', _button = "Фильтр"):
 		for key in self._get_data_keys():
-			input_el = BS('<input type="text" name="%s" placeholder="%s">' % (key, key)).input
-			self.soup.find(_element).insert(0,input_el)
-		input_el = BS('<input type="button" value="Фильтр">').input
-		self.soup.find(_element).insert(0,input_el)
+			input_el = self.soup.new_tag("input", name_=key, placeholder=key)
+			self.soup.find(_element).append(input_el)
+		input_el = self.soup.new_tag("input", type="button", value=_button)
+		self.soup.find(_element).append(input_el)
 
 	def _make_table(self, **kwargs):
-		_table = BS('<table>').table
-		_thead = BS('<thead>').thead
-		_tr = BS('<tr>').tr
+		_table = self.soup.new_tag("table")
+		_thead = self.soup.new_tag("thead")
+		_tr = self.soup.new_tag("tr")
 		for key in self._get_data_keys():
-			_tr.insert(0,BS('<th>%s</th>' % key).th)
+			_tr.append(BS('<th>%s</th>' % key).th)
 		_thead.insert(0,_tr)
-		_tbody = BS('<tbody>').tbody
+		_tbody = self.soup.new_tag("tbody")
 		for item_key in self.data.keys():
-			_tr = BS('<tr>').tr
+			_tr = self.soup.new_tag("tr")
 			for key in self._get_data_keys():
-				_tr.insert(0,BS('<td>%s</td>' % self.data[item_key][key]).td)
-			_tbody.insert(0,_tr)
-		_table.insert(0,_tbody)
-		_table.insert(0,_thead)
+				_tr.append(BS('<td>%s</td>' % self.data[item_key][key]).td)
+			_tbody.append(_tr)
+		_table.append(_thead)
+		_table.append(_tbody)
 		self.soup.find('article').insert(0,_table)
+
 	def _insert_data(self):
 		self._make_hfooter('header')
 		self._make_table()
-		self._make_hfooter('footer')
+		self._make_hfooter('footer', 'Добавить')

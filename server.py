@@ -6,7 +6,7 @@ from threading import Thread
 from time import sleep
 from datetime import datetime
 
-from database.data import data
+from database.data import data as db
 # from database.users import calc_hash
 # from database.users import set_auth_cookies, check_auth_cookies, del_auth_cookies
 #
@@ -89,41 +89,6 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(str.encode(json.dumps(data, indent = 4)))
 
-	def _do_login(self, login = '', password = ''):
-		try:
-			_user = login
-			_pass = password
-			_hash = calc_hash("%s^%s" % (_user, _pass))
-			if users[_user]['hash'] != _hash:
-				raise WrongPasswordError('Неверный пароль для пользователя "%s"' % _user)
-		except KeyError:
-			raise WrongUsernameError('Нет пользователя с именем "%s"' % _user)
-		self._redirect('/rpd_main/?%s' % urllib.parse.urlencode({'login':_user}), cookies = set_auth_cookies(_user))
-
-	def show_login_form(self, login = None, password = None, redirect = None, error = None):
-		self._load_str(
-			LoginForm(
-				login = login,
-				password = password,
-				redirect = redirect,
-				error = error
-			)
-		)
-
-	def show_lost_form(self):
-		self._load_str(
-			LostForm()
-		)
-
-	def show_confirm_form(self, _forward = None, _return = None):
-		self._load_str(
-			ConfirmExitFrom(_forward = _forward, _return = _return)
-		)
-
-	def show_search_form(self, params = {}):
-		self._load_str(
-			SearchForm(params)
-		)
 
 	def do_GET(self):
 		params = self._get_params()
@@ -140,7 +105,7 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 				content_type = 'text/css'
 			self._load_file(self.path.lstrip('/'), content_type=content_type)
 		elif self.path  == '/':
-			self._load_str(EditorForm(data))
+			self._load_str(EditorForm(db))
 		elif self.path.startswith('/workers'):
 		 	self._load_str('<meta charset="utf-8"><pre>%s</pre>' % (workers))
 		# elif self.path.startswith('/lost'):
@@ -162,16 +127,22 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 			).decode('utf-8')
 		)
 		print(self.path, data, file = sys.stderr)
-		if self.path.startswith('/auth'):
+		if self.path.startswith('/setfilter'):
 			try:
-				_user = data['login'][0]
-				_pass = data['pass'][0]
-				self._do_login(_user, _pass)
-			except LoginError as e:
-				self.show_login_form(login = _user, password = _pass, error = e)
-			except KeyError as e:
-				self.show_login_form(error = e)
-
+				_filter = data['data'][0]
+			except (KeyError, IndexError) as e:
+				_filter = {}
+			self._load_str(EditorForm(db))
+		elif self.path.startswith('/addrecord'):
+			print(db)
+			try:
+				_insert = json.loads(data['data'][0])
+			except (KeyError, IndexError) as e:
+				_insert = {}
+			print('>>>>', _insert)
+			db.update({222:_insert})
+			print(db)
+			self._load_str(EditorForm(db))
 
 if __name__ == '__main__':
 	server = HTTPServer(('0.0.0.0', 8000), SmallDBRqHandler)

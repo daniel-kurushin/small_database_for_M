@@ -1,4 +1,6 @@
 import pickle
+import re
+
 try:
 	data = pickle.load(open('database/data.dat', 'rb'))
 except:
@@ -38,3 +40,18 @@ except:
 		},
 	}
 	pickle.dump(data, open('database/data.dat', 'wb'))
+
+def filter(db = {}, _filter = {}):
+	rez = {}
+	for key in db:
+		accept = len(_filter)
+		for field in _filter:
+			_str = _filter[field].strip()
+			_re = r'.*(%s).*' % _str
+			print(field, type(_str), _re, accept)
+			if _str != '' and re.match(_re, str(db[key][field])):
+				accept -= 1
+		print (accept)
+		if accept == len(_filter):
+			rez.update({key:db[key]})
+	return rez

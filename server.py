@@ -7,6 +7,7 @@ from time import sleep
 from datetime import datetime
 
 from database.data import data as db
+from database.data import filter
 # from database.users import calc_hash
 # from database.users import set_auth_cookies, check_auth_cookies, del_auth_cookies
 #
@@ -129,10 +130,10 @@ class SmallDBRqHandler(BaseHTTPRequestHandler):
 		print(self.path, data, file = sys.stderr)
 		if self.path.startswith('/setfilter'):
 			try:
-				_filter = data['data'][0]
+				_filter = json.loads(data['data'][0])
 			except (KeyError, IndexError) as e:
 				_filter = {}
-			self._load_str(EditorForm(db))
+			self._load_str(EditorForm(filter(db, _filter)))
 		elif self.path.startswith('/addrecord'):
 			print(db)
 			try:
